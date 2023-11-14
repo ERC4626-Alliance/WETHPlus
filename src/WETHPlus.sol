@@ -5,7 +5,7 @@ pragma solidity 0.8.15;
 /// @author ERC-4626 Alliance (https://github.com/ERC4626-Alliance/WETHPlus)
 /// @author Modified from WETH9 (https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) and Solmate ERC20 and ERC4626 (https://github.com/transmissions11/solmate)
 
-contract WETHPlus {
+contract WETHPlus /** is IWETHPlus **/ {
     string public constant name = "Wrapped Ether Plus";
     string public constant symbol = "WETH+";
     uint8 public constant decimals = 18;
@@ -63,6 +63,23 @@ contract WETHPlus {
         }
         emit Transfer(address(0), receiver, assets);
         emit Deposit(msg.sender, receiver, assets, assets);
+    }
+
+    function withdrawAll(address receiver, address owner) external payable returns (uint256 shares) {
+        shares = balanceOf[owner]; 
+        if (msg.sender != owner) {
+            uint256 allowed = allowance[owner][msg.sender];
+
+            if (allowed != type(uint256).max) allowance[owner][msg.sender] = allowed - shares;
+        }
+
+        balanceOf[owner] -= shares;
+
+        emit Transfer(owner, address(0), shares);
+        emit Withdraw(msg.sender, receiver, owner, shares, shares);
+
+        (bool success, ) = payable(msg.sender).call{value: shares}("");
+        require(success);
     }
 
     function withdraw(uint256 shares) public {
@@ -253,10 +270,6 @@ contract WETHPlus {
     function previewRedeem(uint256 shares) external pure returns (uint256 assets) {
         assets = shares;
     }
-
-    /*//////////////////////////////////////////////////////////////
-                     DEPOSIT/WITHDRAWAL LIMIT LOGIC
-    //////////////////////////////////////////////////////////////*/
 
     function maxDeposit(address) external pure returns (uint256) {
         return type(uint256).max;
