@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8;
 
+
 interface IERC20 {
     function name() external returns(string memory);
     function symbol() external returns(string memory);
@@ -42,45 +43,39 @@ interface IERC2612 {
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 }
 
-interface IERC4626 {
+interface IERC7575MinimalVault {
 
     function asset() external returns(address);
 
+    function share() external returns (address);
+
+    function convertToShares(uint256 assets) external pure returns (uint256 shares);
+
+    function convertToAssets(uint256 shares) external pure returns (uint256 assets);
+
     function totalAssets() external view returns (uint256);
+}
 
+interface IERC7575DepositVault {
     function deposit(uint256, address receiver) external payable returns (uint256 shares);
+    
+    function previewDeposit(uint256 assets) external pure returns (uint256 shares);
+    
+    function maxDeposit(address) external pure returns (uint256);
+}
 
-    function mint(uint256, address receiver) external payable returns (uint256 assets);
-
+interface IERC7575WithdrawVault {
     function withdraw(
         uint256 assets,
         address receiver,
         address owner
     ) external returns (uint256 shares);
 
-    function redeem(
-        uint256 shares,
-        address receiver,
-        address owner
-    ) external returns (uint256 assets);
-    
-    function convertToShares(uint256 assets) external pure returns (uint256 shares);
-
-    function convertToAssets(uint256 shares) external pure returns (uint256 assets);
-
-    function previewDeposit(uint256 assets) external pure returns (uint256 shares);
-
-    function previewMint(uint256 shares) external pure returns (uint256 assets);
-
     function previewWithdraw(uint256 assets) external pure returns (uint256 shares);
 
-    function previewRedeem(uint256 shares) external pure returns (uint256 assets);
-
-    function maxDeposit(address) external pure returns (uint256);
-
-    function maxMint(address) external pure returns (uint256);
-
     function maxWithdraw(address owner) external view returns (uint256);
+}
 
-    function maxRedeem(address owner) external view returns (uint256);
+interface IERC165 {
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }

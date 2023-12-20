@@ -15,7 +15,7 @@ contract WETHUpgradeRouterTest is Test {
 
     function setUp() public {
         wethPlus = IWETHPlus(payable(new WETHPlus()));
-        router = new WETHUpgradeRouter(wethPlus, WETH9, PERMIT2);
+        router = new WETHUpgradeRouter(address(WETH9), payable(address(wethPlus)), PERMIT2);
     }
 
     function testWETH9Upgrade(address to, uint32 value) public {

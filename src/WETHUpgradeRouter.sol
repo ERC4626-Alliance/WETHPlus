@@ -10,29 +10,15 @@ import "./IWETHPlus.sol";
 
 contract WETHUpgradeRouter {
 
-    IWETH9 public immutable WETH9;
-
-    IWETHPlus public immutable WETHPlus;
-
     address public immutable PERMIT2;
 
-    constructor (IWETHPlus wethPlus, IWETH9 weth9, address permit2) {
-        WETHPlus = wethPlus;
-        WETH9 = weth9;
+    constructor (address weth9, address payable wethPlus, address permit2) {
+        asset = weth9;
+        share = wethPlus;
         PERMIT2 = permit2;
     }
 
     receive() external payable {}
-
-    /// @dev function naming used for ERC-4626 compatibility
-    function deposit(uint256 amount, address to) public returns (uint256 shares) {
-        WETH9.transferFrom(msg.sender, address(this), amount);
-        WETH9.withdraw(amount);
-
-        shares = amount;
-        
-        require(WETHPlus.deposit{value: amount}(0, to) == shares);
-    }
 
     function depositAll(
         address to, 
@@ -41,32 +27,62 @@ contract WETHUpgradeRouter {
         bytes32 r,
         bytes32 s 
     ) public payable returns (uint256 shares) {
-
-        // Withdraw all WETH9 balance of caller
-        uint256 weth9Amount = WETH9.balanceOf(msg.sender);
-        if (weth9Amount != 0) {
-            WETH9.transferFrom(msg.sender, address(this), weth9Amount);
-            WETH9.withdraw(weth9Amount);
-        }
-
-        // Combined amount for deposit
-        shares = weth9Amount + msg.value;
         
-        // complete the deposit to the target address. The amount parameter is ignored by WETH+ in favor of the msg.value
-        require(WETHPlus.deposit{value: shares}(0, to) == shares);
-
         // If the user passes in a permit of permit2, then attempt to execute it
         if (deadline >= block.timestamp) {
-            _maxPermit2(deadline, v, r, s);
+            IWETHPlus(share).permit(msg.sender, PERMIT2, type(uint256).max, deadline, v, r, s);
         }
+
+        // Withdraw all WETH9 balance of caller
+        uint256 weth9Amount = IWETH9(asset).balanceOf(msg.sender);
+        return deposit(weth9Amount, to);
     }
 
-    function _maxPermit2(
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public payable {
-        WETHPlus.permit(msg.sender, PERMIT2, type(uint256).max, deadline, v, r, s);
+    /*//////////////////////////////////////////////////////////////
+                        ERC7575MinimalVault
+    //////////////////////////////////////////////////////////////*/
+    
+    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
+
+    address public immutable asset;
+
+    address payable public immutable share;
+
+    uint256 public constant totalAssets = 0;
+        
+    function convertToShares(uint256 assets) external pure returns (uint256) { return assets; }
+    
+    function convertToAssets(uint256 shares) external pure returns (uint256) { return shares; }
+
+    /*//////////////////////////////////////////////////////////////
+                        ERC7575DepositVault
+    //////////////////////////////////////////////////////////////*/
+
+    function deposit(uint256 amount, address to) public returns (uint256 shares) {
+        
+        IWETH9(asset).transferFrom(msg.sender, address(this), amount);
+        IWETH9(asset).withdraw(amount);
+
+        shares = amount;
+        
+        require(IWETHPlus(share).deposit{value: amount}(0, to) == shares);
+    }
+
+    function previewDeposit(uint256 assets) external pure returns (uint256 shares) {
+        shares = assets;
+    }
+
+    function maxDeposit(address) external pure returns (uint256) {
+        return type(uint256).max;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                             EIP-165 LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
+        return interfaceId == 0x01ffc9a7 // EIP165
+                || interfaceId == 0x50a526d6 // ERC7575MinimalVault
+                || interfaceId == 0xc1f329ef; // ERC7575DepositVault
     }
 }

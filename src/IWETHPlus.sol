@@ -8,7 +8,7 @@ pragma solidity >=0.8;
 
 import "./Interfaces.sol";
 
-interface IWETHPlus is IWETH9, IERC2612, IERC4626 {
+interface IWETHPlus is IWETH9, IERC2612, IERC165, IERC7575MinimalVault, IERC7575DepositVault, IERC7575WithdrawVault {
 
     function withdrawAll(address receiver, address owner) external returns (uint256 shares);
 
