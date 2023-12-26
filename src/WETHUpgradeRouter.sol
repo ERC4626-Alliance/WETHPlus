@@ -3,7 +3,6 @@ pragma solidity 0.8.15;
 
 /// @notice Upgrade Contract from WETH9 to WETH+
 /// @author ERC-4626 Alliance (https://github.com/ERC4626-Alliance/WETHPlus)
-/// @author Modified from WETH9 (https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) and Solmate ERC20 and ERC4626 (https://github.com/transmissions11/solmate)
 
 import "./Interfaces.sol";
 import "./IWETHPlus.sol";
@@ -27,7 +26,7 @@ contract WETHUpgradeRouter {
         bytes32 r,
         bytes32 s 
     ) public payable returns (uint256 shares) {
-        
+
         // If the user passes in a permit of permit2, then attempt to execute it
         if (deadline >= block.timestamp) {
             IWETHPlus(share).permit(msg.sender, PERMIT2, type(uint256).max, deadline, v, r, s);
@@ -65,7 +64,7 @@ contract WETHUpgradeRouter {
 
         shares = amount;
         
-        require(IWETHPlus(share).deposit{value: amount}(0, to) == shares);
+        IWETHPlus(share).deposit{value: amount}(0, to);
     }
 
     function previewDeposit(uint256 assets) external pure returns (uint256 shares) {

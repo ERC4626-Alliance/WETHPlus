@@ -41,7 +41,7 @@ contract WETHPlus is EthVault {
         emit Transfer(owner, address(0), shares);
         emit Withdraw(msg.sender, receiver, owner, shares, shares);
 
-        (bool success, ) = payable(msg.sender).call{value: shares}("");
+        (bool success, ) = payable(receiver).call{value: shares}("");
         require(success);
     }
 
