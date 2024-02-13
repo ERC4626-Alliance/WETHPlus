@@ -29,7 +29,9 @@ contract WETHUpgradeRouter {
 
         // If the user passes in a permit of permit2, then attempt to execute it
         if (deadline >= block.timestamp) {
-            IWETHPlus(share).permit(msg.sender, PERMIT2, type(uint256).max, deadline, v, r, s);
+            if (IWETHPlus(share).allowance(msg.sender, PERMIT2) != type(uint256).max) {
+                IWETHPlus(share).permit(msg.sender, PERMIT2, type(uint256).max, deadline, v, r, s);
+            }
         }
 
         // Withdraw all WETH9 balance of caller

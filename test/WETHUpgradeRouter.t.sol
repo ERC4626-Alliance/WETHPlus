@@ -111,4 +111,39 @@ contract WETHUpgradeRouterTest is Test {
         assertEq(wethPlus.balanceOf(to), amount);
         assertEq(wethPlus.allowance(owner, PERMIT2), type(uint256).max);
     }
+
+    function testDepositAllWithPermitFrontrun(uint248 privateKey, uint256 amount, address to, uint256 timestamp) public {
+        amount = bound(amount, 0, address(this).balance);
+        timestamp = bound(timestamp, block.timestamp, type(uint256).max);
+        if (privateKey == 0) privateKey = 1;
+
+        
+        address owner = vm.addr(privateKey);
+
+        weth9.deposit{value:amount}();
+        weth9.transfer(owner, amount);
+
+        vm.startPrank(owner);
+        weth9.approve(address(router), amount);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+            privateKey,
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    wethPlus.DOMAIN_SEPARATOR(),
+                    keccak256(abi.encode(PERMIT_TYPEHASH, owner, PERMIT2, type(uint256).max, 0, timestamp))
+                )
+            )
+        );
+
+        wethPlus.permit(owner, PERMIT2, type(uint256).max, timestamp, v, r, s);
+
+        assertEq(router.depositAll(to, timestamp, v, r, s), amount);
+        
+        assertEq(weth9.balanceOf(to), 0);
+        assertEq(weth9.allowance(owner, address(router)), 0);
+        assertEq(wethPlus.balanceOf(to), amount);
+        assertEq(wethPlus.allowance(owner, PERMIT2), type(uint256).max);
+    }
 }
