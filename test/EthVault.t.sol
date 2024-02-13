@@ -71,8 +71,13 @@ contract EthVaultTest is DSTestPlus {
         assertEq(vault.previewWithdraw(amount), amount);
     }
 
-    // TODO make sure all to addresses dont have a fallback function
     function testWithdraw(uint256 depositAmount, uint256 withdrawAmount, address to) public {
+        
+        (bool success, ) = to.call{value: 1}("");
+        hevm.assume(success);
+        hevm.prank(to);
+        address(this).call{value: 1}("");
+        
         depositAmount = bound(depositAmount, 0, address(this).balance);
         withdrawAmount = bound(withdrawAmount, 0, depositAmount);
 
@@ -84,6 +89,11 @@ contract EthVaultTest is DSTestPlus {
     }
 
     function testWithdrawFrom(uint256 depositAmount, uint256 withdrawAmount, address from, address to) public {
+        (bool success, ) = to.call{value: 1}("");
+        hevm.assume(success);
+        hevm.prank(to);
+        address(this).call{value: 1}("");
+        
         depositAmount = bound(depositAmount, 0, address(this).balance);
         withdrawAmount = bound(withdrawAmount, 0, depositAmount);
         hevm.assume(from != to);
@@ -103,6 +113,11 @@ contract EthVaultTest is DSTestPlus {
     }
 
     function testWithdrawFromMaxApproval(uint256 depositAmount, uint256 withdrawAmount, address from, address to) public {
+        (bool success, ) = to.call{value: 1}("");
+        hevm.assume(success);
+        hevm.prank(to);
+        address(this).call{value: 1}("");
+        
         depositAmount = bound(depositAmount, 0, address(this).balance);
         withdrawAmount = bound(withdrawAmount, 0, depositAmount);
         hevm.assume(from != to);

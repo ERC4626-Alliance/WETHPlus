@@ -37,10 +37,11 @@ contract WETHPlusTest is DSTestPlus {
         assertEq(vault.balanceOf(address(this)), amount);
     }
 
-    // TODO
-    function testFailFallback() public {}
+    function testFallbackReverts() public {
+        (bool success, ) = address(vault).call{value: 1}(abi.encodeWithSignature("nonExistentFunction()"));
+        assertFalse(success);
+    }
 
-    // TODO make sure all to addresses dont have a fallback function
     function testWithdraw(uint256 depositAmount, uint256 withdrawAmount) public {
         depositAmount = bound(depositAmount, 0, address(this).balance);
         withdrawAmount = bound(withdrawAmount, 0, depositAmount);
@@ -54,6 +55,11 @@ contract WETHPlusTest is DSTestPlus {
     function testWithdrawAll(uint256 amount, address from, address to) public {
         amount = bound(amount, 0, address(this).balance);
         hevm.assume(from != to);
+
+        (bool success, ) = to.call{value: 1}("");
+        hevm.assume(success);
+        hevm.prank(to);
+        address(this).call{value: 1}("");
         
         uint256 ethBefore = to.balance;
 
@@ -73,6 +79,11 @@ contract WETHPlusTest is DSTestPlus {
     function testWithdrawAllMaxApproval(uint256 amount, address from, address to) public {
         amount = bound(amount, 0, address(this).balance);
         hevm.assume(from != to);
+        
+        (bool success, ) = to.call{value: 1}("");
+        hevm.assume(success);
+        hevm.prank(to);
+        address(this).call{value: 1}("");
         
         uint256 ethBefore = to.balance;
 
