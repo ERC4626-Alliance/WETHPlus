@@ -41,8 +41,6 @@ contract WETHUpgradeRouter {
                         ERC7575MinimalVault
     //////////////////////////////////////////////////////////////*/
     
-    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
-
     address public immutable asset;
 
     address payable public immutable share;
