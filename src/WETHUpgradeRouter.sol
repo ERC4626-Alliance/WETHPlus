@@ -45,6 +45,7 @@ contract WETHUpgradeRouter {
 
     address payable public immutable share;
 
+    /// @notice totalAssets included for ERC-7575 compatibility even though unused
     uint256 public constant totalAssets = 0;
         
     function convertToShares(uint256 assets) external pure returns (uint256) { return assets; }
