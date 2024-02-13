@@ -19,7 +19,7 @@ import "./EthVault.sol";
          +-- ERC7575DepositVault
          +-- ERC7575WithdrawVault
          x-- ERC20
-             +-- [ERC2612]
+             +-- ERC2612
 */
 contract WETHPlus is EthVault {
 
@@ -76,6 +76,6 @@ contract WETHPlus is EthVault {
         return interfaceId == 0x01ffc9a7 // EIP165
                 || interfaceId == 0x50a526d6 // ERC7575MinimalVault
                 || interfaceId == 0xc1f329ef // ERC7575DepositVault
-                || interfaceId == 0xe1550342; // ERC7575WithdrawVault
+                || interfaceId == 0x70dec094; // ERC7575WithdrawVault
     }
 }

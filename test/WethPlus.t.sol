@@ -19,7 +19,7 @@ contract WETHPlusTest is DSTestPlus {
         assertTrue(vault.supportsInterface(0x01ffc9a7));
         assertTrue(vault.supportsInterface(0x50a526d6));
         assertTrue(vault.supportsInterface(0xc1f329ef));
-        assertTrue(vault.supportsInterface(0xe1550342));
+        assertTrue(vault.supportsInterface(0x70dec094));
         assertFalse(vault.supportsInterface(0xffffffff));
     }
 
